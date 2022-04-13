@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+
+	"github.com/tidwall/gjson"
 )
 
 func jsonHadler(c *fiber.Ctx) error {
@@ -16,25 +19,20 @@ func jsonHadler(c *fiber.Ctx) error {
 		return err
 	}
 
+	value := gjson.Get(data.Json, data.Query)
+	println(value.String())
+
 	response := make(map[string]string)
 	response["query"] = data.Query
 	response["json"] = data.Json
-	response["result"] = `{
-		"name": {"first": "Tom", "last": "Anderson"},
-		"age":37,
-		"children": ["Sara","Alex","Jack"],
-		"fav.movie": "Deer Hunter",
-		"friends": [
-		  {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
-		  {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
-		  {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
-		]
-	  }`
+	response["result"] = value.String()
 	return c.JSON(response)
 }
 
 func main() {
 	app := fiber.New()
+
+	app.Use(cors.New())
 
 	app.Post("/parse", jsonHadler)
 
